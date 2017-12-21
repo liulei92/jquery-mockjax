@@ -274,25 +274,25 @@ The data option may be a custom matching function returning `true` of `false`
 whether the data is expected or not:
 
 ```javascript
-$.mockjax([
+$.mockjax({
   url: "/rest",
   data: function( data ) {
     return deepEqual( data, expected );
   }
-]);
+});
 ```
 
 The data function is a recommended place for assertions. Return `true` and let
 a testing framework of choice do the rest:
 
 ```javascript
-$.mockjax([
+$.mockjax({
   url: "/rest",
   data: function ( json ) {
     assert.deepEqual( JSON.parse(json), expected ); // QUnit example.
     return true;
   }
-]);
+});
 ```
 
 To capture URL parameters, use a capturing regular expression for the
@@ -771,7 +771,7 @@ using a module intended for use as a "browserified" module:
 
 ```js
 var jquery = require('jquery');
-var mockjax = require('jquery.mockjax')(jquery, window);
+var mockjax = require('jquery-mockjax')(jquery, window);
 // Note that we expect `window` to be defined once this file is browserified and
 // used in a browser. If it isn't Mockjax will have a problem!
 

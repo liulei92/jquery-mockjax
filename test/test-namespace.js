@@ -1,12 +1,12 @@
 (function(qunit, $) {
 	'use strict';
-	
+
 	var t = qunit.test;
-	
+
 	/* -------------------- */
 	qunit.module('namespace');
 	/* -------------------- */
-	
+
 	t('url should be namespaced via global mockjax settings', function(assert) {
 		var done = assert.async();
 
@@ -154,6 +154,108 @@
 
 		$.ajax({
 			url: '/api/v1/myservice',
+			error: qunit.noErrorCallbackExpected,
+			complete: function(xhr) {
+				assert.equal(xhr.status, 200, 'Response was successful');
+				done();
+			}
+		});
+	});
+
+	t('should pass url to response settings using http://', function(assert) {
+		var done = assert.async();
+
+		$.mockjaxSettings.namespace = 'http://localhost:4000';
+
+		$.mockjax({
+			url: 'myservice',
+			response: function(settings) {
+				assert.equal(settings.url, 'http://localhost:4000/myservice');
+			}
+		});
+
+		$.ajax({
+			url: 'http://localhost:4000/myservice',
+			error: qunit.noErrorCallbackExpected,
+			complete: function(xhr) {
+				assert.equal(xhr.status, 200, 'Response was successful');
+				done();
+			}
+		});
+	});
+
+	t('should pass http:// url with trailing / to response', function(assert) {
+		var done = assert.async();
+
+		$.mockjaxSettings.namespace = 'http://localhost/';
+
+		$.mockjax({
+			url: '/myservice',
+			response: function(settings) {
+				assert.equal(settings.url, 'http://localhost/myservice');
+			}
+		});
+
+		$.ajax({
+			url: 'http://localhost/myservice',
+			error: qunit.noErrorCallbackExpected,
+			complete: function(xhr) {
+				assert.equal(xhr.status, 200, 'Response was successful');
+				done();
+			}
+		});
+	});
+
+	t('should handle the same mock multiple times in a namespace', function(assert) {
+		var done = assert.async();
+
+		$.mockjaxSettings.namespace = '/api/v1';
+
+		$.mockjax({
+			url: 'one'
+		});
+
+		$.ajax({
+			url: '/api/v1/one',
+			error: qunit.noErrorCallbackExpected,
+			complete: function(xhr) {
+				assert.equal(xhr.status, 200, 'Response was successful');
+				$.ajax({
+					url: '/api/v1/one',
+					error: qunit.noErrorCallbackExpected,
+					complete: function(xhr) {
+						assert.equal(xhr.status, 200, 'Response was successful');
+						done();
+					}
+				});
+			}
+		});
+	});
+
+	t('should be able to declare no namespace on individual mock', function(assert) {
+
+		var done = assert.async();
+		$.mockjaxSettings.namespace = '/api/v1';
+
+		$.mockjax({
+			url: 'one'
+		});
+
+		$.mockjax({
+			url: '/two',
+			namespace: null
+		});
+
+		$.ajax({
+			url: '/api/v1/one',
+			error: qunit.noErrorCallbackExpected,
+			complete: function(xhr) {
+				assert.equal(xhr.status, 200, 'Response was successful');
+			}
+		});
+
+		$.ajax({
+			url: '/two',
 			error: qunit.noErrorCallbackExpected,
 			complete: function(xhr) {
 				assert.equal(xhr.status, 200, 'Response was successful');
